@@ -1,0 +1,10 @@
+pip install flask flask-cors opencv-python deepface pandas numpy
+
+Start the Flask backend server:
+python app.py
+
+Start your frontend server:
+python -m http.server 8000
+
+
+Access the application at http://localhost:8000
