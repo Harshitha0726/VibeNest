@@ -1,0 +1,53 @@
+<html>
+    <head>
+        <title>Contact</title>
+        <style>
+            .hidden {
+                display: none;
+            }
+            body {
+            background-image: url('../images/background1.jpeg');
+            color:white;
+            }
+        </style>
+    </head>
+    <body>
+       
+        <section class="text-center">
+            <h2 class="text-3xl font-bold mb-4">Contact Us</h2>
+            <form id="contactForm" method="post" class="max-w-lg mx-auto bg-white p-6 rounded shadow">
+                <div class="mb-4">
+                    <label for="name" class="block text-sm font-bold mb-2">Name:</label>
+                    <input type="text" id="name" name="name" required class="border border-gray-300 p-2 w-full rounded" />
+                </div>
+                <div class="mb-4">
+                    <label for="email" class="block text-sm font-bold mb-2">Email:</label>
+                    <input type="email" id="email" name="email" required class="border border-gray-300 p-2 w-full rounded" />
+                </div>
+                <div class="mb-4">
+                    <label for="message" class="block text-sm font-bold mb-2">Message:</label>
+                    <textarea id="message" name="message" required class="border border-gray-300 p-2 w-full rounded"></textarea>
+                </div>
+                <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">Send Message</button>
+            </form>
+            <!-- Success message -->
+            <p id="successMessage" class="hidden text-green-600 mt-4">Thank you for your message! We will get back to you soon.</p>
+        </section>
+
+        <script>
+            // JavaScript to handle form submission
+            document.getElementById('contactForm').onsubmit = function(event) {
+                event.preventDefault(); // Prevent actual form submission
+
+                // Show the success message
+                document.getElementById('successMessage').classList.remove('hidden');
+
+                // Optionally, clear the form fields
+                document.getElementById('contactForm').reset();
+
+                // If you want the form to actually submit to the server,
+                // you can remove the event.preventDefault() line above.
+            };
+        </script>
+    </body>
+</html>

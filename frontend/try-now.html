@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>emotion Detection</title>
+    <script defer src="https://unpkg.com/face-api.js"></script>
+    <style>
+        #videoElement {
+            width: 640px;
+            height: 480px;
+            border: 1px solid black;
+            box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.3);
+        }
+        .emoji-option {
+            display: inline-block;
+            font-size: 50px;
+            cursor: pointer;
+        }
+        body {
+            background-image: url('../images/background.jpg'); 
+            background-size: cover; 
+            background-position: center;
+        }
+        h1 {
+            color:black;
+            margin-top: 20px;
+            font-size: 2.5em;
+            text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.5);
+        }
+        button {
+            padding: 10px 20px;
+            font-size: 1em;
+            color: #fff;
+            background-color: #007BFF;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        .centered-form {
+            text-align: center;
+        }
+        #camera-section {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 100%;
+            height: 100%;
+        }
+        #emoji-section {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            display: none; /* Initially hidden */
+        }
+
+        /* Emoji styling */
+        .emoji-option {
+            font-size: 3em;
+            margin: 0.2em;
+            cursor: pointer;
+        }
+
+        .emoji-option:hover {
+            transform: scale(1.2); /* Slightly enlarge on hover */
+        }
+
+        /* Styling for the selected emoji text */
+        #selected-emoji {
+            margin-top: 1em;
+            font-size: 1.2em;
+        }
+        #selected-emoji {
+         color: white;
+        }
+    </style>
+</head>
+<body>
+    <h1 style="text-align: center;color: white;">Emotion Detection via Camera or Emoji</h1>
+    <div class="centered-form">
+    <!-- Option to select either camera or emoji -->
+    <label for="input-option" style="color: white;">Choose input method: </label>
+    <select id="input-option" onchange="toggleInputMethod()">
+        <option value="camera">Camera</option>
+        <option value="emoji">Emoji</option>
+    </select>
+    </div>
+
+
+    <!-- Camera for facial emoji detection -->
+    <div id="camera-section">
+        <video id="videoElement" autoplay></video><br>
+        <button onclick="captureAndSendImage()">Capture Emotion</button>
+        <p id="emoji-result"></p>
+        <div id="results"></div> 
+    </div>
+
+    <!-- Emoji selection for user input -->
+    <div id="emoji-section" style="display: none;">
+        <span class="emoji-option" onclick="selectEmoji('happy')">😊</span>
+        <span class="emoji-option" onclick="selectEmoji('sad')">😔</span>
+        <span class="emoji-option" onclick="selectEmoji('calm')">😌</span>
+        <span class="emoji-option" onclick="selectEmoji('angry')">😠</span> 
+        <span class="emoji-option" onclick="selectEmoji('neutral')">😐</span>
+        <p id="selected-emoji">Selected Emoji: None</p>
+    </div>
+
+    <!-- Div for displaying results -->
+    <div id="resultsDiv"></div>
+
+    <script>
+        let video = document.getElementById('videoElement'); 
+        const resultsDiv = document.getElementById("resultsDiv");
+
+    async function captureAndSendImage() {
+        // Ensure the video is ready before capturing
+        if (video.videoWidth === 0 || video.videoHeight === 0) {
+            console.error("Video not ready for capture.");
+            return;
+        }
+    
+        try {
+            resultsDiv.innerHTML = '<p>Processing...</p>';
+            if (videoElement.srcObject) {
+            const stream = videoElement.srcObject;
+            const tracks = stream.getTracks();
+            tracks.forEach(track => track.stop()); // Stop each track
+            videoElement.srcObject = null; // Clear the video source
+            console.log('Video stream closed');
+        }
+                const response = await fetch('http://localhost:5000/api/detect-emotion', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                    
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    resultsDiv.innerText = `Detected Emotion: ${data.emotion}`;
+                    resultsDiv.innerHTML += '<p>Getting recommendations...</p>';
+                    const response1 = await fetch('http://localhost:5000/api/emoji-recommendations', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ emoji: data.emotion }) // Send emoji as JSON
+                });
+
+                const data1 = await response1.json();
+                if (data1.status == 'success') {
+                    displayResults(data1.emotion, data1.recommendations); // Display results
+                } else {
+                    throw new Error(data1.message); // Handle error
+                }
+                }
+            } catch (error) {
+                console.error("Error detecting emotion:", error);
+                resultsDiv.innerText = "Error detecting emotion";
+            }
+        }   
+
+        // Function to send selected emoji to the server for recommendations
+        async function sendEmojiForRecommendations(emoji) {
+            try {
+                resultsDiv.innerHTML = '<p>Getting recommendations...</p>'; // Show processing message
+                const response = await fetch('http://localhost:5000/api/emoji-recommendations', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ emoji: emoji }) // Send emoji as JSON
+                });
+                
+                const data = await response.json();
+                if (data.status == 'success') {
+                    displayResults(data.emotion, data.recommendations); // Display results
+                } else {
+                    throw new Error(data.message); // Handle error
+                }
+            } catch (error) {
+                console.error('Error:', error); // Log error to console
+                resultsDiv.innerHTML = `<p class="error">Error getting recommendations: ${error.message}</p>`; // Display error message
+            }
+        }
+
+        // Function to select an emoji and send it for recommendations
+        function selectEmoji(emoji) {
+            document.getElementById('selected-emoji').innerText = "Selected Emoji: " + emoji;
+            sendEmojiForRecommendations(emoji); // Send the emoji for processing
+        }
+
+        function displayResults(emoji, recommendations) {
+    // Create table headers
+    const tableHeaders = `
+        <tr>
+            <th>Song Name</th>
+            <th>Artist</th>
+            <th>Popularity</th>
+            <th>Listen</th>
+        </tr>
+    `;
+
+    // Create table rows for each song
+    const tableRows = recommendations.map(song => `
+        <tr style="color: white;">
+            <td>${song.name}</td>
+            <td>${song.artist}</td>
+            <td>${song.popularity}</td>
+            <td><a href="${song.url}" target="_blank" class="listen-btn">Listen on Spotify</a></td>
+        </tr>
+    `).join('');
+
+    // Construct the full table HTML
+    resultsDiv.innerHTML = `
+        <h3 style="color: white;">Detected Emoji: ${emoji}</h3>
+        <table>
+            <thead>
+                ${tableHeaders}
+            </thead>
+            <tbody>
+                ${tableRows}
+            </tbody>
+        </table>
+    `;
+
+    // Apply some basic styles to the table
+    resultsDiv.innerHTML += `
+        <style>
+            table {
+                width: 100%;
+                border-collapse: collapse;
+                margin-top: 10px;
+            }
+            th, td {
+                border: 1px solid #ccc;
+                padding: 10px;
+                text-align: left;
+            }
+            th {
+                background-color: #f2f2f2;
+            }
+            .listen-btn {
+                color: blue;
+                text-decoration: underline;
+            }
+        </style>
+    `;
+}
+
+        // Function to toggle between camera and emoji input sections
+        function toggleInputMethod() {
+            const inputOption = document.getElementById('input-option').value;
+            document.getElementById('camera-section').style.display = inputOption === 'camera' ? 'block' : 'none';
+            document.getElementById('emoji-section').style.display = inputOption === 'emoji' ? 'block' : 'none';
+        }
+
+        // Set up face-api.js for real-time emoji detection from the camera feed
+        const videoElement = document.getElementById('videoElement');
+        navigator.mediaDevices.getUserMedia({ video: {} }) // Request access to the camera
+            .then((stream) => {
+                videoElement.srcObject = stream; // Set the video source to the camera stream
+            });
+
+        videoElement.addEventListener('play', () => {
+            const canvas = faceapi.createCanvasFromMedia(videoElement); // Create a canvas for drawing
+            document.body.append(canvas); // Append the canvas to the body
+            const displaySize = { width: videoElement.width, height: videoElement.height };
+            faceapi.matchDimensions(canvas, displaySize); // Match the dimensions of the canvas to the video
+
+            setInterval(async () => {
+                const detections = await faceapi.detectAllFaces(videoElement, new faceapi.TinyFaceDetectorOptions()).withFaceExpressions(); // Detect faces and emojis
+                const resizedDetections = faceapi.resizeResults(detections, displaySize); // Resize results to fit the canvas
+                canvas.getContext('2d').clearRect(0, 0, canvas.width, canvas.height); // Clear the canvas
+                faceapi.draw.drawDetections(canvas, resizedDetections); // Draw face detections
+                faceapi.draw.drawFaceExpressions(canvas, resizedDetections); // Draw face expressions
+
+                if (detections.length > 0) {
+                    const expressions = detections[0].expressions; // Get expressions from the first face detected
+                    const emoji = Object.keys(expressions).reduce((a, b) => expressions[a] > expressions[b] ? a : b); // Find the dominant emoji
+                    document.getElementById('emoji-result').innerText = `Detected emoji: ${emoji}`; // Display the emoji
+                }
+            }, 100);
+        });
+    </script>
+</body>
+</html>

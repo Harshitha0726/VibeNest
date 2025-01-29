@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vibenest - Music Recommendation</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- Navigation Menu -->
+    <header>
+        <nav class="navbar">
+            <div class="logo">
+                <img src="https://i.ibb.co/rvv37N9/logo.jpg" alt="logo">
+            </div>
+            <ul class="nav-links">
+                <li><a href="#home">Home</a></li>
+                <li><a href="try-now.html">Get Started</a></li>
+            </ul>
+        </nav>
+</header>
+        <!-- Hero Section -->
+        <div class="hero">
+            <div class="overlay"></div>
+            <div class="hero-content"><br><br><br>
+                <h1>Discover Music That Matches Your Mood</h1>
+                <p>Vibenest uses AI and facial detection to suggest music that resonates with your emotions in real-time. Your perfect playlist is just a click away!</p>
+                <div class="cta-buttons">
+                    <a href="try-now.html" class="btn-primary">Try Now</a>
+                    <a href="learn.html" class="btn-secondary">Learn More</a>
+                </div>
+            </div>
+        </div>
+
+    <script>
+       
+        // Stop the camera when switching to emoji input
+        function stopCamera() {
+            if (videoStream) {
+                videoStream.getTracks().forEach(track => track.stop());
+            }
+        }
+
+        // Toggle between camera and emoji input
+        function toggleInput(type, event) { // Added event as a parameter
+            const cameraInput = document.getElementById('camera-input');
+            const emojiInput = document.getElementById('emoji-input');
+            const buttons = document.querySelectorAll('.toggle-btn');
+            
+            buttons.forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active'); // Now event parameter is passed correctly
+
+            if (type === 'camera') {
+                cameraInput.style.display = 'block';
+                emojiInput.style.display = 'none';
+                initCamera();
+            } else {
+                cameraInput.style.display = 'none';
+                emojiInput.style.display = 'grid';
+                stopCamera();
+            }
+        }
+
+        // Add event listener for capture button (no function defined for capture)
+        captureBtn.addEventListener('click', captureAndSendImage);
+
+        // Initialize camera on page load
+        initCamera();
+
+        // Function to handle image capture and send it to the server
+        async function captureAndSendImage() {
+            // Placeholder for image capture and sending logic
+            resultDiv.textContent = "Emotion detected! Processing...";
+        }
+    </script>
+
+    <!-- Footer Section -->
+    <footer>
+        <div class="footer-container">
+            <div class="footer-links">
+                <h4>Quick Links</h4>
+                <ul>
+                    <li><a href="about.html">About Us</a></li>
+                    <li><a href="contact.html">Contact</a></li>
+                </ul>
+            </div>
+            <div class="footer-social">
+                <h4>Follow Us</h4>
+                <ul class="social-icons">
+                    <li><img width="48" height="48" src="https://img.icons8.com/color/48/instagram-new--v1.png" alt="instagram-new--v1"/></li>
+                    <li><img width="48" height="48" src="https://img.icons8.com/color/48/facebook.png" alt="facebook"/></li>    
+                    <li><img width="48" height="48" src="https://img.icons8.com/color/48/twitter--v1.png" alt="twitter--v1"/></li>
+                </ul>
+            </div>
+            <div class="footer-contact">
+                <h4>Contact Us</h4>
+                <p>Email: support@vibenest.com</p>
+            </div>
+            <div class="footer-newsletter">
+                <h4>Subscribe to Our Newsletter</h4>
+                <form class="newsletter-form">
+                    <input type="email" placeholder="Enter your email">
+                    <button type="submit" class="btn-secondary">Subscribe</button>
+                </form>
+            </div>
+        </div>
+    </footer>
+</body>
+</html>
